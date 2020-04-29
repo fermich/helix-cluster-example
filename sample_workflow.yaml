@@ -1,0 +1,25 @@
+name: MyWorkflow
+jobs:
+    - name: DataCollectionJob
+      command: CollectPartitions # The command corresponding to Task callbacks
+      jobConfigMap: { # Arbitrary key-value pairs to pass to all tasks in this job
+        k1: "v1",
+        k2: "v2"
+      }
+      targetResource: DataLoaders # Run on data loading instances only
+      tasks: # Schedule 3 tasks, each responsible for aggregating requests for a chunk of partitions
+        - taskConfigMap: { # Arbitrary key-value pairs to pass to this task
+            partitions: "p0-p100"
+          }
+        - taskConfigMap: {
+            partitions: "p101-200"
+          }
+        - taskConfigMap: {
+            partitions: "p201-300"
+          }
+    - name: DataLoadJob
+      parents: [DataCollectionJob] # DAG dependencies
+      command: LoadData # The command corresponding to Task callbacks
+      # Rather than defining individual tasks, start a task on each MASTER replica of MyDB partitions
+      targetResource: MyDB
+      targetPartitionStates: [MASTER]

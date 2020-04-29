@@ -1,0 +1,26 @@
+
+{
+  "id" : "TaskContext_DataCollectionJob",
+  "simpleFields" : {
+    "START_TIME" : "1407436013641"
+},
+  "listFields" : {
+  },
+  "mapFields" : {
+    "0" : {
+      "TASK_ID" : "426e8033-e4f4-45bb-8195-bdfa5fdc59d0",
+      "STATE" : "IN_PROGRESS",
+      "ASSIGNED_PARTICIPANT" : "JobRunner_container_1"
+    },
+    "1" : {
+      "TASK_ID" : "ff6ecfff-548d-4b32-bc54-699d462d295a",
+      "STATE" : "IN_PROGRESS",
+      "ASSIGNED_PARTICIPANT" : "JobRunner_container_0"
+    },
+    "2" : {
+      "TASK_ID" : "27cdc4f8-e9ed-4117-8ee2-8c5f8f201e84",
+      "STATE" : "IN_PROGRESS",
+      "ASSIGNED_PARTICIPANT" : "JobRunner_container_2"
+    }
+  }
+}

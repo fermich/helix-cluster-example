@@ -1,0 +1,29 @@
+
+!!org.apache.helix.provisioning.yarn.example.MyTaskAppSpec
+appConfig:
+  config: { # Arbitrary key-value pairs to pass to the service on launch
+    k1: v1
+  }
+appMasterPackageUri: 'file:///home/me/jobrunner-yarn-0.7.1-SNAPSHOT-pkg.tar' # Package containing our YARN-aware controller
+appName: testApp
+serviceConfigMap:
+  JobRunner: { # By default, specify that the job runner service has a pool of 3 containers
+    num_containers: 3,
+    memory: 1024
+  }
+serviceMainClassMap: {
+  # Starting point for all containers that will run tasks
+  # This is a good place to register task callbacks
+  JobRunner: org.apache.helix.provisioning.yarn.example.MyTaskService
+}
+servicePackageURIMap: {
+  # The package containing the service main class and anything else each service container needs
+  JobRunner: 'file:///home/me/jobrunner-yarn-0.7.1-SNAPSHOT-pkg.tar'
+}
+services: [
+  JobRunner]
+# A set of workflow configuration files to submit immediately on launch
+# Workflows can also be submitted later, and we will soon support plugging in new code packages for new tasks
+taskConfigs:
+  - name: DataCollectionWorkflow
+    yamlFile: 'file:///home/me/data_collection_workflow.yaml'
