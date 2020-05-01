@@ -1,3 +1,6 @@
+package pl.fermich.lab;
+
+import org.apache.helix.task.*;
 
 public class LoadDataTask implements Task {
   private final TaskConfig _taskConfig;
