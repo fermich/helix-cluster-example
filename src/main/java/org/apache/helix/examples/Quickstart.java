@@ -193,6 +193,7 @@ public class Quickstart {
         + ". Partitions will move from old nodes to the new node.");
     admin.addInstance(CLUSTER_NAME, instanceConfig);
     INSTANCE_CONFIG_LIST.add(instanceConfig);
+    //TODO submit?
     MyProcess process = new MyProcess(instanceConfig.getInstanceName());
     PROCESS_LIST.add(process);
     admin.rebalance(CLUSTER_NAME, RESOURCE_NAME, 3);
@@ -244,7 +245,7 @@ public class Quickstart {
       manager =
           HelixManagerFactory.getZKHelixManager(CLUSTER_NAME, instanceName,
               InstanceType.PARTICIPANT, ZK_ADDRESS);
-
+//TODO follow this master slave impl:
       MasterSlaveStateModelFactory stateModelFactory =
           new MasterSlaveStateModelFactory(instanceName);
 

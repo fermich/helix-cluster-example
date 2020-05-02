@@ -101,7 +101,7 @@ public class BootstrapProcess {
     manager =
         HelixManagerFactory.getZKHelixManager(clusterName, instanceName, InstanceType.PARTICIPANT,
             zkConnectString);
-
+//TODO custom state machine:
     stateModelFactory = new BootstrapHandler();
     // genericStateMachineHandler = new StateMachineEngine();
     // genericStateMachineHandler.registerStateModelFactory("MasterSlave", stateModelFactory);

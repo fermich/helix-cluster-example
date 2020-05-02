@@ -5,10 +5,12 @@ import org.apache.helix.task.*;
 public class LoadDataTask implements Task {
   private final TaskConfig _taskConfig;
   private final JobConfig _jobConfig;
+  private String partition;
 
-  public LoadDataTask(TaskCallbackContext ctx) {
+  public LoadDataTask(TaskCallbackContext ctx, String partition) {
     _taskConfig = ctx.getTaskConfig();
     _jobConfig = ctx.getJobConfig();
+    this.partition = partition;
   }
 
   public TaskResult run() {

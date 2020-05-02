@@ -26,6 +26,7 @@ repositories {
 dependencies {
     // This dependency is found on compile classpath of this component and consumers.
     compile group: 'org.apache.helix', name: 'helix-core', version: '0.9.4'
+    //compile group: 'com.rabbitmq', name: 'amqp-client', version: '2.8.7'
 
     implementation 'com.google.guava:guava:26.0-jre'
 
