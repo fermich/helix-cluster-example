@@ -15,10 +15,12 @@ public class LoadDataTask implements Task {
 
   public TaskResult run() {
     /* load the data */
+    System.out.println("Loading data in LoadDataTask: " + partition);
     return new TaskResult(TaskResult.Status.COMPLETED, null);
   }
 
   public void cancel() {
     /* Interrupt run() */
+    System.out.println("Cancelling LoadDataTask: " + partition);
   }
 }

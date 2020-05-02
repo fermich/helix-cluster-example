@@ -1,11 +1,21 @@
 package org.apache.helix.rabbitmq;
 
+import org.apache.helix.HelixManager;
+import org.apache.helix.HelixManagerFactory;
+import org.apache.helix.InstanceType;
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.IdealState.RebalanceMode;
 import org.apache.helix.model.StateModelDefinition;
+import org.apache.helix.participant.StateMachineEngine;
+import org.apache.helix.task.TaskFactory;
+import org.apache.helix.task.TaskStateModelFactory;
 import org.apache.helix.tools.StateModelConfigGenerator;
+import pl.fermich.lab.LoadDataTaskFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ResourceManager {
   public static final String DEFAULT_CLUSTER_NAME = "rabbitmq-consumer-cluster";
@@ -30,8 +40,7 @@ public class ResourceManager {
               ZkClient.DEFAULT_CONNECTION_TIMEOUT, new ZNRecordSerializer());
       ZKHelixAdmin admin = new ZKHelixAdmin(zkclient);
 
-      // add resource "topic" which has 6 partitions
-//      addResource(admin, clusterName, DEFAULT_RESOURCE_NAME, DEFAULT_PARTITION_NUMBER);
+      addResource(admin, clusterName, DEFAULT_RESOURCE_NAME, DEFAULT_PARTITION_NUMBER);
 //      addResource(admin, clusterName, "mycustomresource", 3);
       //deleteResource(admin, clusterName, DEFAULT_RESOURCE_NAME);
       //deleteResource(admin, clusterName, "mycustomresource");
