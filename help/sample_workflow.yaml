@@ -17,6 +17,7 @@ jobs:
         - taskConfigMap: {
             partitions: "p201-300"
           }
+
     - name: DataLoadJob
       parents: [DataCollectionJob] # DAG dependencies
       command: LoadData # The command corresponding to Task callbacks

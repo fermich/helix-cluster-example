@@ -1,5 +1,6 @@
 package org.apache.helix.rabbitmq;
 
+import com.google.common.collect.Sets;
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
 import org.apache.helix.InstanceType;
@@ -9,6 +10,7 @@ import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.participant.StateMachineEngine;
 import org.apache.helix.task.*;
+import pl.fermich.lab.LoadDataTask;
 import pl.fermich.lab.LoadDataTaskFactory;
 
 import java.util.ArrayList;
@@ -31,20 +33,15 @@ public class TaskNode {
 
   public void connect() {
     try {
-      _manager = HelixManagerFactory.getZKHelixManager(_clusterName, _consumerId, InstanceType.PARTICIPANT, _zkAddr);
+      _manager = HelixManagerFactory.getZKHelixManager(_clusterName, _consumerId, InstanceType.CONTROLLER, _zkAddr);
       _manager.connect();
 
-      StateMachineEngine stateMach = _manager.getStateMachineEngine();
-
-      //register task factory:
-      Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
-      taskFactoryReg.put("LoadData", new LoadDataTaskFactory()); //key=command
-      stateMach.registerStateModelFactory("MyTaskId", new TaskStateModelFactory(_manager, taskFactoryReg));
-
       TaskDriver taskDriver = new TaskDriver(_manager);
-      Workflow myWorkflow = configureWorkflow();
+      Workflow myWorkflow = configureWorkflow("Workflow3", "Job3");
 
+      taskDriver.delete("Workflow3");
       taskDriver.start(myWorkflow);
+     // taskDriver.stop("Workflow3");
 
       //taskDriver.stop(myWorkflow);
       //taskDriver.resume(myWorkflow);
@@ -61,12 +58,12 @@ public class TaskNode {
     }
   }
 
-  private Workflow configureWorkflow() {
-    Workflow.Builder myWorkflowBuilder = new Workflow.Builder("MyWorkflow");
-    myWorkflowBuilder.setExpiry(2000L)
+  private Workflow configureWorkflow(String workflowName, String jobName) {
+    Workflow.Builder myWorkflowBuilder = new Workflow.Builder(workflowName);
+    myWorkflowBuilder.setExpiry(200000L)
             .setScheduleConfig(ScheduleConfig.recurringFromNow(TimeUnit.MINUTES, 2));
 
-    myWorkflowBuilder.addJob("MyRunningJob", configureJob());
+    myWorkflowBuilder.addJob(jobName, configureJob());
 
     //myWorkflowBuilder.addParentChildDependency(ParentJobName, ChildJobName);
 
@@ -81,7 +78,16 @@ public class TaskNode {
 //    taskCfgs.add(taskCfg);
 
     JobConfig.Builder myJobCfgBuilder = new JobConfig.Builder();
-    myJobCfgBuilder.setCommand("LoadData").setNumberOfTasks(2);
+
+//    # Rather than defining individual tasks, start a task on each MASTER replica of MyDB partitions
+//      targetResource: MyDB
+//      targetPartitionStates: [MASTER]
+
+    //start a task on each MASTER replica of target resource partitions
+    myJobCfgBuilder.setCommand(LoadDataTask.COMMAND).setNumberOfTasks(2);
+    myJobCfgBuilder.setTargetResource(ResourceManager.DEFAULT_RESOURCE_NAME);
+    //myJobCfgBuilder.setTargetPartitions()
+    //myJobCfgBuilder.setTargetPartitionStates(Sets.newHashSet("MASTER"));
     //myJobCfgBuilder.addTaskConfigs(taskCfgs);
     return myJobCfgBuilder;
   }

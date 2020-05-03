@@ -6,6 +6,7 @@ public class LoadDataTask implements Task {
   private final TaskConfig _taskConfig;
   private final JobConfig _jobConfig;
   private String partition;
+  public static final String COMMAND = "LoadData";
 
   public LoadDataTask(TaskCallbackContext ctx, String partition) {
     _taskConfig = ctx.getTaskConfig();
@@ -15,12 +16,12 @@ public class LoadDataTask implements Task {
 
   public TaskResult run() {
     /* load the data */
-    System.out.println("Loading data in LoadDataTask: " + partition);
+    System.out.println("[LoadDataTask] Processing: " + partition);
     return new TaskResult(TaskResult.Status.COMPLETED, null);
   }
 
   public void cancel() {
     /* Interrupt run() */
-    System.out.println("Cancelling LoadDataTask: " + partition);
+    System.out.println("[LoadDataTask] Cancelling: " + partition);
   }
 }

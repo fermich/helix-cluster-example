@@ -12,8 +12,10 @@ import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.participant.StateMachineEngine;
+import org.apache.helix.task.TaskConstants;
 import org.apache.helix.task.TaskFactory;
 import org.apache.helix.task.TaskStateModelFactory;
+import pl.fermich.lab.LoadDataTask;
 import pl.fermich.lab.LoadDataTaskFactory;
 
 public class ConsumerNode {
@@ -33,13 +35,14 @@ public class ConsumerNode {
       _manager = HelixManagerFactory.getZKHelixManager(_clusterName, _consumerId, InstanceType.PARTICIPANT, _zkAddr);
 
       StateMachineEngine stateMach = _manager.getStateMachineEngine();
+
       ConsumerStateModelFactory modelFactory = new ConsumerStateModelFactory(_consumerId);
       stateMach.registerStateModelFactory(SetupConsumerCluster.DEFAULT_STATE_MODEL, modelFactory);
 
       //register task factory:
       Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
-      taskFactoryReg.put("LoadData", new LoadDataTaskFactory()); //command
-      stateMach.registerStateModelFactory("MyTaskId", new TaskStateModelFactory(_manager, taskFactoryReg));
+      taskFactoryReg.put(LoadDataTask.COMMAND, new LoadDataTaskFactory());
+      stateMach.registerStateModelFactory(TaskConstants.STATE_MODEL_NAME, new TaskStateModelFactory(_manager, taskFactoryReg));
 
       _manager.connect();
 
