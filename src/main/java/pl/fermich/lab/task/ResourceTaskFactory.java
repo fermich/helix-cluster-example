@@ -4,7 +4,7 @@ import org.apache.helix.task.Task;
 import org.apache.helix.task.TaskCallbackContext;
 import org.apache.helix.task.TaskFactory;
 
-public class LoadDataTaskFactory implements TaskFactory {
+public class ResourceTaskFactory implements TaskFactory {
     @Override
     public Task createNewTask(TaskCallbackContext context) {
         /**
@@ -13,6 +13,6 @@ public class LoadDataTaskFactory implements TaskFactory {
          * @return A {@link Task} instance.
          */
         String targetPartition = context.getTaskConfig().getTargetPartition();
-        return new LoadDataTask(context, targetPartition);
+        return new ResourceTask(context, targetPartition);
     }
 }

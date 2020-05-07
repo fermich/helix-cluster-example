@@ -8,7 +8,7 @@ import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.task.*;
-import pl.fermich.lab.task.LoadDataTask;
+import pl.fermich.lab.task.ResourceTask;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -78,7 +78,7 @@ public class TaskManager {
 //      targetPartitionStates: [MASTER]
 
     //start a task on each MASTER replica of target resource partitions
-    myJobCfgBuilder.setCommand(LoadDataTask.COMMAND).setNumberOfTasks(2);
+    myJobCfgBuilder.setCommand(ResourceTask.COMMAND).setNumberOfTasks(2);
     myJobCfgBuilder.setTargetResource(ResourceManager.DEFAULT_RESOURCE_NAME);
     //myJobCfgBuilder.setTargetPartitions()
     //myJobCfgBuilder.setTargetPartitionStates(Sets.newHashSet("MASTER"));

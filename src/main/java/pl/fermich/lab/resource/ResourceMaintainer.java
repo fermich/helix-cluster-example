@@ -1,10 +1,10 @@
 package pl.fermich.lab.resource;
 
-public class ConsumerThread extends Thread {
+public class ResourceMaintainer extends Thread {
   private final String _partition;
   private final String _consumerId;
 
-  public ConsumerThread(String partition, String consumerId) {
+  public ResourceMaintainer(String partition, String consumerId) {
     _partition = partition;
     _consumerId = consumerId;
   }
