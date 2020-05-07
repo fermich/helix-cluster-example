@@ -1,4 +1,4 @@
-package org.apache.helix.rabbitmq;
+package pl.fermich.lab;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,16 +15,17 @@ import org.apache.helix.participant.StateMachineEngine;
 import org.apache.helix.task.TaskConstants;
 import org.apache.helix.task.TaskFactory;
 import org.apache.helix.task.TaskStateModelFactory;
-import pl.fermich.lab.LoadDataTask;
-import pl.fermich.lab.LoadDataTaskFactory;
+import pl.fermich.lab.resource.ConsumerStateModelFactory;
+import pl.fermich.lab.task.LoadDataTask;
+import pl.fermich.lab.task.LoadDataTaskFactory;
 
-public class ConsumerNode {
+public class ClusterNode {
   private final String _zkAddr;
   private final String _clusterName;
   private final String _consumerId;
   private HelixManager _manager = null;
 
-  public ConsumerNode(String zkAddr, String clusterName, String consumerId) {
+  public ClusterNode(String zkAddr, String clusterName, String consumerId) {
     _zkAddr = zkAddr;
     _clusterName = clusterName;
     _consumerId = consumerId;
@@ -37,7 +38,7 @@ public class ConsumerNode {
       StateMachineEngine stateMach = _manager.getStateMachineEngine();
 
       ConsumerStateModelFactory modelFactory = new ConsumerStateModelFactory(_consumerId);
-      stateMach.registerStateModelFactory(SetupConsumerCluster.DEFAULT_STATE_MODEL, modelFactory);
+      stateMach.registerStateModelFactory(ClusterInit.DEFAULT_STATE_MODEL, modelFactory);
 
       //register task factory:
       Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
@@ -72,7 +73,7 @@ public class ConsumerNode {
 
 //    final String zkAddr = args[0];
     final String zkAddr = "localhost:2181";
-    final String clusterName = SetupConsumerCluster.DEFAULT_CLUSTER_NAME;
+    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 //    final String consumerId = args[1];
     final String consumerId = "0";
 
@@ -93,18 +94,18 @@ public class ConsumerNode {
       }
 
       // start consumer
-      final ConsumerNode consumerNode =
-          new ConsumerNode(zkAddr, clusterName, "consumer_" + consumerId);
+      final ClusterNode clusterNode =
+          new ClusterNode(zkAddr, clusterName, "consumer_" + consumerId);
 
       Runtime.getRuntime().addShutdownHook(new Thread() {
         @Override
         public void run() {
           System.out.println("Shutting down consumer_" + consumerId);
-          consumerNode.disconnect();
+          clusterNode.disconnect();
         }
       });
 
-      consumerNode.connect();
+      clusterNode.connect();
     } finally {
       if (zkclient != null) {
         zkclient.close();

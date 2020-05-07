@@ -1,13 +1,11 @@
-package org.apache.helix.rabbitmq;
+package pl.fermich.lab;
 
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.IdealState.RebalanceMode;
-import org.apache.helix.model.StateModelDefinition;
-import org.apache.helix.tools.StateModelConfigGenerator;
 
-public class SetupConsumerCluster {
+public class ResourceManager {
   public static final String DEFAULT_CLUSTER_NAME = "rabbitmq-consumer-cluster";
   public static final String DEFAULT_RESOURCE_NAME = "topic";
   public static final int DEFAULT_PARTITION_NUMBER = 6;
@@ -30,25 +28,26 @@ public class SetupConsumerCluster {
               ZkClient.DEFAULT_CONNECTION_TIMEOUT, new ZNRecordSerializer());
       ZKHelixAdmin admin = new ZKHelixAdmin(zkclient);
 
-      // add cluster
-      admin.addCluster(clusterName, true);
-
-      // add state model definition
-      admin.addStateModelDef(clusterName, DEFAULT_STATE_MODEL,
-          new StateModelDefinition(StateModelConfigGenerator.generateConfigForOnlineOffline()));
-
-      //TODO resource management not necessarily here?
-      // add resource "topic" which has 6 partitions
-      String resourceName = DEFAULT_RESOURCE_NAME;
-      admin.addResource(clusterName, resourceName, DEFAULT_PARTITION_NUMBER, DEFAULT_STATE_MODEL,
-          RebalanceMode.FULL_AUTO.toString());
-
-      admin.rebalance(clusterName, resourceName, 1);
-
+      addResource(admin, clusterName, DEFAULT_RESOURCE_NAME, DEFAULT_PARTITION_NUMBER);
+//      addResource(admin, clusterName, "mycustomresource", 3);
+//      deleteResource(admin, clusterName, DEFAULT_RESOURCE_NAME);
+      //deleteResource(admin, clusterName, "mycustomresource");
     } finally {
       if (zkclient != null) {
         zkclient.close();
       }
     }
+  }
+
+  private static void addResource(ZKHelixAdmin admin, String clusterName, String resourceName, int partitions) {
+    admin.addResource(clusterName, resourceName, partitions, DEFAULT_STATE_MODEL,
+            RebalanceMode.FULL_AUTO.toString());
+    admin.rebalance(clusterName, resourceName, 1);
+  }
+
+  private static void deleteResource(ZKHelixAdmin admin, String clusterName, String resourceName) {
+    admin.dropResource(clusterName, resourceName);
+    //TODO need to call rebalance()?
+    //admin.rebalance(clusterName, resourceName, 1);
   }
 }

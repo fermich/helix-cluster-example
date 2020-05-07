@@ -1,4 +1,4 @@
-package org.apache.helix.rabbitmq;
+package pl.fermich.lab.resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

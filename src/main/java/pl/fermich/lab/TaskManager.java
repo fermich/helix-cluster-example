@@ -1,6 +1,5 @@
-package org.apache.helix.rabbitmq;
+package pl.fermich.lab;
 
-import com.google.common.collect.Sets;
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
 import org.apache.helix.InstanceType;
@@ -8,24 +7,19 @@ import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
-import org.apache.helix.participant.StateMachineEngine;
 import org.apache.helix.task.*;
-import pl.fermich.lab.LoadDataTask;
-import pl.fermich.lab.LoadDataTaskFactory;
+import pl.fermich.lab.task.LoadDataTask;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class TaskNode {
+public class TaskManager {
   private final String _zkAddr;
   private final String _clusterName;
   private final String _consumerId;
   private HelixManager _manager = null;
 
-  public TaskNode(String zkAddr, String clusterName, String consumerId) {
+  public TaskManager(String zkAddr, String clusterName, String consumerId) {
     _zkAddr = zkAddr;
     _clusterName = clusterName;
     _consumerId = consumerId;
@@ -107,7 +101,7 @@ public class TaskNode {
 
 //    final String zkAddr = args[0];
     final String zkAddr = "localhost:2181";
-    final String clusterName = SetupConsumerCluster.DEFAULT_CLUSTER_NAME;
+    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 //    final String consumerId = args[1];
     final String consumerId = "1";
 
@@ -127,8 +121,8 @@ public class TaskNode {
         admin.addInstance(clusterName, config);
       }
 
-      final TaskNode taskNode =
-              new TaskNode(zkAddr, clusterName, "task_" + consumerId);
+      final TaskManager taskManager =
+              new TaskManager(zkAddr, clusterName, "task_" + consumerId);
 
       // start consumer
 //      final ConsumerNode consumerNode =
@@ -138,11 +132,11 @@ public class TaskNode {
         @Override
         public void run() {
           System.out.println("Shutting down task_" + consumerId);
-          taskNode.disconnect();
+          taskManager.disconnect();
         }
       });
 
-      taskNode.connect();
+      taskManager.connect();
     } finally {
       if (zkclient != null) {
         zkclient.close();

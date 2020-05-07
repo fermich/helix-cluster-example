@@ -1,4 +1,4 @@
-package pl.fermich.lab;
+package pl.fermich.lab.task;
 
 import org.apache.helix.task.*;
 

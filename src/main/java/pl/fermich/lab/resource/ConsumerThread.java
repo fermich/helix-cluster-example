@@ -1,4 +1,4 @@
-package org.apache.helix.rabbitmq;
+package pl.fermich.lab.resource;
 
 public class ConsumerThread extends Thread {
   private final String _partition;
