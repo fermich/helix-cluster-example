@@ -3,6 +3,7 @@ package pl.fermich.lab;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
@@ -26,6 +27,21 @@ public class ClusterNode {
     this.zkAddr = zkAddr;
     this.clusterName = clusterName;
     this.nodeId = nodeId;
+  }
+
+  public void startNode() {
+    ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
+
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        System.out.println("Shutting down: " + nodeId);
+        disconnect();
+      }
+    });
+
+    registerNodeInstance(clusterAdmin, nodeId);
+    connectToCluster();
   }
 
   public void connectToCluster() {
@@ -79,31 +95,12 @@ public class ClusterNode {
   }
 
   public static void main(String[] args) throws Exception {
-//    if (args.length < 3) {
-//      System.err
-//          .println("USAGE: java ConsumerNode zookeeperAddress (e.g. localhost:2181) consumerId (0-2)");
-//      System.exit(1);
-//    }
-
-//    final String zkAddr = args[0];
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-//    final String nodeId = args[1];
-    final String nodeId = "node_0";
-    ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
 
-    final ClusterNode clusterNode =
-        new ClusterNode(zkAddr, clusterName, nodeId);
+    final String nodeId = UUID.randomUUID().toString();
+    final ClusterNode clusterNode = new ClusterNode(zkAddr, clusterName, nodeId);
 
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        System.out.println("Shutting down: " + nodeId);
-        clusterNode.disconnect();
-      }
-    });
-
-    clusterNode.registerNodeInstance(clusterAdmin, nodeId);
-    clusterNode.connectToCluster();
+    clusterNode.startNode();
   }
 }

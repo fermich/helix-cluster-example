@@ -4,20 +4,11 @@ import org.apache.helix.HelixManager;
 import org.apache.helix.controller.HelixControllerMain;
 
 public class ClusterManager {
-  public static void main(String[] args) {
-//    if (args.length < 1) {
-//      System.err.println("USAGE: java StartClusterManager zookeeperAddress (e.g. localhost:2181)");
-//      System.exit(1);
-//    }
 
-    //    final String zkAddr = args[0];
-    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
-
+  public void startStandaloneController(String zkAddr, String clusterName) {
     try {
-      final HelixManager manager =
-          HelixControllerMain.startHelixController(zkAddr, clusterName, null,
-              HelixControllerMain.STANDALONE);
+      final HelixManager manager = HelixControllerMain.startHelixController(zkAddr, clusterName, null,
+                      HelixControllerMain.STANDALONE);
 
       Runtime.getRuntime().addShutdownHook(new Thread() {
         @Override
@@ -31,5 +22,13 @@ public class ClusterManager {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  public static void main(String[] args) {
+    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+
+    ClusterManager clusterManager = new ClusterManager();
+    clusterManager.startStandaloneController(zkAddr, clusterName);
   }
 }

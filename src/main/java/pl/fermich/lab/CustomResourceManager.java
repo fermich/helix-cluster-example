@@ -13,12 +13,6 @@ public class CustomResourceManager {
   public static final int DEFAULT_REPLICA_NUMBER = 1;
 
   public static void main(String[] args) {
-//    if (args.length < 1) {
-//      System.err.println("USAGE: java SetupConsumerCluster zookeeperAddress (e.g. localhost:2181)");
-//      System.exit(1);
-//    }
-
-//    final String zkAddr = args[0];
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 

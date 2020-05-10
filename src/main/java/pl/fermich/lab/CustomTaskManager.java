@@ -22,6 +22,17 @@ public class CustomTaskManager {
     this.taskId = taskId;
   }
 
+  public void startCustomWorkflow() {
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        System.out.println("Shutting down: " + taskId);
+        disconnect();
+      }
+    });
+    startWorkflow("CustomWorkflow", "CustomJob");
+  }
+
   public void startWorkflow(String workflowName, String jobName) {
     try {
       manager = HelixManagerFactory.getZKHelixManager(clusterName, taskId, InstanceType.CONTROLLER, zkAddr);
@@ -88,33 +99,14 @@ public class CustomTaskManager {
     });
   }
 
-  public static void main(String[] args) throws Exception {
-//    if (args.length < 3) {
-//      System.err
-//          .println("USAGE: java ConsumerNode zookeeperAddress (e.g. localhost:2181) consumerId (0-2)");
-//      System.exit(1);
-//    }
-
-//    final String zkAddr = args[0];
+  public static void main(String[] args) {
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+    final String taskId = "task_1";
+    CustomTaskManager taskManager = new CustomTaskManager(zkAddr, clusterName, taskId);
 
     ClusterAdmin clusterAdmin = new ClusterAdmin(ClusterInit.DEFAULT_ZK_ADDRESS);
-
-    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-//    final String taskId = args[1];
-    final String taskId = "task_1";
-
-    final CustomTaskManager taskManager = new CustomTaskManager(zkAddr, clusterName, taskId);
-
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        System.out.println("Shutting down: " + taskId);
-        taskManager.disconnect();
-      }
-    });
-
     taskManager.registerTaskInstance(clusterAdmin);
-    taskManager.startWorkflow("CustomWorkflow", "CustomJob");
+    taskManager.startCustomWorkflow();
   }
 }
