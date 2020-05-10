@@ -1,10 +1,10 @@
 package pl.fermich.lab.resource;
 
-public class ResourceMaintainer extends Thread {
+public class CustomResourceMaintainer extends Thread {
   private final String partition;
   private final String nodeId;
 
-  public ResourceMaintainer(String partition, String nodeId) {
+  public CustomResourceMaintainer(String partition, String nodeId) {
     this.partition = partition;
     this.nodeId = nodeId;
   }

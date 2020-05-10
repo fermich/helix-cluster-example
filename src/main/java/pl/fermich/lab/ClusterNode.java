@@ -15,9 +15,9 @@ import org.apache.helix.participant.StateMachineEngine;
 import org.apache.helix.task.TaskConstants;
 import org.apache.helix.task.TaskFactory;
 import org.apache.helix.task.TaskStateModelFactory;
-import pl.fermich.lab.resource.ResourceStateModelFactory;
-import pl.fermich.lab.task.ResourceTask;
-import pl.fermich.lab.task.ResourceTaskFactory;
+import pl.fermich.lab.resource.CustomResourceStateModelFactory;
+import pl.fermich.lab.task.CustomTask;
+import pl.fermich.lab.task.CustomTaskFactory;
 
 public class ClusterNode {
   private final String zkAddr;
@@ -37,12 +37,13 @@ public class ClusterNode {
 
       StateMachineEngine stateMach = manager.getStateMachineEngine();
 
-      ResourceStateModelFactory modelFactory = new ResourceStateModelFactory(nodeId);
-      stateMach.registerStateModelFactory(ClusterInit.DEFAULT_STATE_MODEL, modelFactory);
+      //register resource factory:
+      CustomResourceStateModelFactory modelFactory = new CustomResourceStateModelFactory(nodeId);
+      stateMach.registerStateModelFactory(CustomResourceManager.DEFAULT_STATE_MODEL, modelFactory);
 
       //register task factory:
       Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
-      taskFactoryReg.put(ResourceTask.COMMAND, new ResourceTaskFactory());
+      taskFactoryReg.put(CustomTask.COMMAND, new CustomTaskFactory());
       stateMach.registerStateModelFactory(TaskConstants.STATE_MODEL_NAME, new TaskStateModelFactory(manager, taskFactoryReg));
 
       manager.connect();

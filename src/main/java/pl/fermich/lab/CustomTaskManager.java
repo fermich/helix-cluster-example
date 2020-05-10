@@ -8,18 +8,18 @@ import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.task.*;
-import pl.fermich.lab.task.ResourceTask;
+import pl.fermich.lab.task.CustomTask;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class TaskManager {
+public class CustomTaskManager {
   private final String zkAddr;
   private final String clusterName;
   private final String nodeId;
   private HelixManager manager = null;
 
-  public TaskManager(String zkAddr, String clusterName, String nodeId) {
+  public CustomTaskManager(String zkAddr, String clusterName, String nodeId) {
     this.zkAddr = zkAddr;
     this.clusterName = clusterName;
     this.nodeId = nodeId;
@@ -35,8 +35,8 @@ public class TaskManager {
 
       taskDriver.delete("Workflow3");
       taskDriver.start(myWorkflow);
-     // taskDriver.stop("Workflow3");
 
+     // taskDriver.stop("Workflow3");
       //taskDriver.stop(myWorkflow);
       //taskDriver.resume(myWorkflow);
       //taskDriver.delete(myWorkflow);
@@ -78,8 +78,8 @@ public class TaskManager {
 //      targetPartitionStates: [MASTER]
 
     //start a task on each MASTER replica of target resource partitions
-    myJobCfgBuilder.setCommand(ResourceTask.COMMAND).setNumberOfTasks(2);
-    myJobCfgBuilder.setTargetResource(ResourceManager.DEFAULT_RESOURCE_NAME);
+    myJobCfgBuilder.setCommand(CustomTask.COMMAND).setNumberOfTasks(2);
+    myJobCfgBuilder.setTargetResource(CustomResourceManager.DEFAULT_RESOURCE_NAME);
     //myJobCfgBuilder.setTargetPartitions()
     //myJobCfgBuilder.setTargetPartitionStates(Sets.newHashSet("MASTER"));
     //myJobCfgBuilder.addTaskConfigs(taskCfgs);
@@ -121,8 +121,8 @@ public class TaskManager {
         admin.addInstance(clusterName, config);
       }
 
-      final TaskManager taskManager =
-              new TaskManager(zkAddr, clusterName, "task_" + consumerId);
+      final CustomTaskManager customTaskManager =
+              new CustomTaskManager(zkAddr, clusterName, "task_" + consumerId);
 
       // start consumer
 //      final ConsumerNode consumerNode =
@@ -132,11 +132,11 @@ public class TaskManager {
         @Override
         public void run() {
           System.out.println("Shutting down task_" + consumerId);
-          taskManager.disconnect();
+          customTaskManager.disconnect();
         }
       });
 
-      taskManager.connect();
+      customTaskManager.connect();
     } finally {
       if (zkclient != null) {
         zkclient.close();

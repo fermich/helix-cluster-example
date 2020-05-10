@@ -12,15 +12,15 @@ import org.apache.helix.participant.statemachine.Transition;
 @StateModelInfo(initialState = "OFFLINE", states = {
     "ONLINE", "ERROR"
 })
-public class ResourceStateModel extends StateModel {
-  private static Logger LOG = LoggerFactory.getLogger(ResourceStateModel.class);
+public class CustomResourceStateModel extends StateModel {
+  private static Logger LOG = LoggerFactory.getLogger(CustomResourceStateModel.class);
 
   private final String nodeId;
   private final String partition;
 
-  private ResourceMaintainer maintainer = null;
+  private CustomResourceMaintainer maintainer = null;
 
-  public ResourceStateModel(String nodeId, String partition) {
+  public CustomResourceStateModel(String nodeId, String partition) {
     this.nodeId = nodeId;
     this.partition = partition;
   }
@@ -31,7 +31,7 @@ public class ResourceStateModel extends StateModel {
 
     if (maintainer == null) {
       LOG.debug("Starting ConsumerThread for " + partition + "...");
-      maintainer = new ResourceMaintainer(partition, nodeId);
+      maintainer = new CustomResourceMaintainer(partition, nodeId);
       maintainer.start();
       LOG.debug("Starting ConsumerThread for " + partition + " done");
 

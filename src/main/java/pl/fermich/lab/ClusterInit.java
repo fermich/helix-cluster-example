@@ -3,14 +3,10 @@ package pl.fermich.lab;
 import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
-import org.apache.helix.model.IdealState.RebalanceMode;
-import org.apache.helix.model.StateModelDefinition;
-import org.apache.helix.tools.StateModelConfigGenerator;
 
 public class ClusterInit {
   public static final String DEFAULT_ZK_ADDRESS = "localhost:2181";
-  public static final String DEFAULT_CLUSTER_NAME = "rabbitmq-consumer-cluster";
-  public static final String DEFAULT_STATE_MODEL = "OnlineOffline";
+  public static final String DEFAULT_CLUSTER_NAME = "helix-cluster-app";
 
   public static void main(String[] args) {
 //    if (args.length < 1) {
@@ -32,17 +28,15 @@ public class ClusterInit {
       // add cluster
       admin.addCluster(clusterName, true);
 
-      // add state model definition
-      admin.addStateModelDef(clusterName, DEFAULT_STATE_MODEL,
-          new StateModelDefinition(StateModelConfigGenerator.generateConfigForOnlineOffline()));
+
 
       //TODO resource management not necessarily here?
       // add resource "topic" which has 6 partitions
-      String resourceName = ResourceManager.DEFAULT_RESOURCE_NAME;
-      admin.addResource(clusterName, resourceName, ResourceManager.DEFAULT_PARTITION_NUMBER, DEFAULT_STATE_MODEL,
-          RebalanceMode.FULL_AUTO.toString());
-
-      admin.rebalance(clusterName, resourceName, 1);
+//      String resourceName = ResourceManager.DEFAULT_RESOURCE_NAME;
+//      admin.addResource(clusterName, resourceName, ResourceManager.DEFAULT_PARTITION_NUMBER, DEFAULT_STATE_MODEL,
+//          RebalanceMode.FULL_AUTO.toString());
+//
+//      admin.rebalance(clusterName, resourceName, ResourceManager.DEFAULT_REPLICA_NUMBER);
 
     } finally {
       if (zkclient != null) {

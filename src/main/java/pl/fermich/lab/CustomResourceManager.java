@@ -4,11 +4,15 @@ import org.apache.helix.manager.zk.ZKHelixAdmin;
 import org.apache.helix.manager.zk.ZNRecordSerializer;
 import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.IdealState.RebalanceMode;
+import org.apache.helix.model.StateModelDefinition;
+import org.apache.helix.tools.StateModelConfigGenerator;
 
-public class ResourceManager {
+public class CustomResourceManager {
 
+  public static final String DEFAULT_STATE_MODEL = "OnlineOffline";
   public static final String DEFAULT_RESOURCE_NAME = "topic";
   public static final int DEFAULT_PARTITION_NUMBER = 6;
+  public static final int DEFAULT_REPLICA_NUMBER = 1;
 
   public static void main(String[] args) {
 //    if (args.length < 1) {
@@ -28,8 +32,9 @@ public class ResourceManager {
       ZKHelixAdmin admin = new ZKHelixAdmin(zkclient);
 
       addResource(admin, clusterName, DEFAULT_RESOURCE_NAME, DEFAULT_PARTITION_NUMBER);
-//      addResource(admin, clusterName, "mycustomresource", 3);
 //      deleteResource(admin, clusterName, DEFAULT_RESOURCE_NAME);
+
+      //      addResource(admin, clusterName, "mycustomresource", 3);
       //deleteResource(admin, clusterName, "mycustomresource");
     } finally {
       if (zkclient != null) {
@@ -39,14 +44,16 @@ public class ResourceManager {
   }
 
   private static void addResource(ZKHelixAdmin admin, String clusterName, String resourceName, int partitions) {
-    admin.addResource(clusterName, resourceName, partitions, ClusterInit.DEFAULT_STATE_MODEL,
+    // add state model definition
+    admin.addStateModelDef(clusterName, DEFAULT_STATE_MODEL,
+            new StateModelDefinition(StateModelConfigGenerator.generateConfigForOnlineOffline()));
+
+    admin.addResource(clusterName, resourceName, partitions, DEFAULT_STATE_MODEL,
             RebalanceMode.FULL_AUTO.toString());
-    admin.rebalance(clusterName, resourceName, 1);
+    admin.rebalance(clusterName, resourceName, DEFAULT_REPLICA_NUMBER);
   }
 
   private static void deleteResource(ZKHelixAdmin admin, String clusterName, String resourceName) {
     admin.dropResource(clusterName, resourceName);
-    //TODO need to call rebalance()?
-    //admin.rebalance(clusterName, resourceName, 1);
   }
 }

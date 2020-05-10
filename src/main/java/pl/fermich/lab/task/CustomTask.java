@@ -2,13 +2,13 @@ package pl.fermich.lab.task;
 
 import org.apache.helix.task.*;
 
-public class ResourceTask implements Task {
+public class CustomTask implements Task {
   private final TaskConfig taskConfig;
   private final JobConfig jobConfig;
   private String partition;
   public static final String COMMAND = "LoadData";
 
-  public ResourceTask(TaskCallbackContext ctx, String partition) {
+  public CustomTask(TaskCallbackContext ctx, String partition) {
     taskConfig = ctx.getTaskConfig();
     jobConfig = ctx.getJobConfig();
     this.partition = partition;
