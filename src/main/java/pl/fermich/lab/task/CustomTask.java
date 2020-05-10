@@ -15,13 +15,12 @@ public class CustomTask implements Task {
   }
 
   public TaskResult run() {
-    /* load the data */
-    System.out.println("[LoadDataTask] Processing: " + partition);
+    System.out.println("Starting task for custom resource partition: " + partition);
     return new TaskResult(TaskResult.Status.COMPLETED, null);
   }
 
   public void cancel() {
     /* Interrupt run() */
-    System.out.println("[LoadDataTask] Cancelling: " + partition);
+    System.out.println("Cancelling task for partition: " + partition);
   }
 }

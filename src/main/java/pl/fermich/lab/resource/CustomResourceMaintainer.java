@@ -14,10 +14,10 @@ public class CustomResourceMaintainer extends Thread {
     try {
       while (true) {
         Thread.sleep(10000);
-        System.out.println(" work log from consumer: " + nodeId + " doing job on: " + partition);
+        System.out.println("Getting data @ " + nodeId + " for partition " + partition);
       }
     } catch (InterruptedException e) {
-      System.err.println(" [-] " + nodeId + " on " + partition + " is interrupted ...");
+      System.err.println("Resource maintainer " + nodeId + " on " + partition + " is interrupted ...");
     } catch (Exception e) {
       e.printStackTrace();
     }

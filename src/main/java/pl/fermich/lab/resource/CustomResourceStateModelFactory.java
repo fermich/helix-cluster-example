@@ -8,10 +8,10 @@ public class CustomResourceStateModelFactory extends StateModelFactory<CustomRes
   public CustomResourceStateModelFactory(String nodeId) {
     this.nodeId = nodeId;
   }
-  //TODO partitions appear here first
+
   @Override
   public CustomResourceStateModel createNewStateModel(String resource, String partition) {
-    CustomResourceStateModel model = new CustomResourceStateModel(nodeId, partition);
-    return model;
+    //partition number appears here first
+    return new CustomResourceStateModel(nodeId, partition);
   }
 }

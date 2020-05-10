@@ -1,8 +1,6 @@
 package pl.fermich.lab;
 
 import org.apache.helix.manager.zk.ZKHelixAdmin;
-import org.apache.helix.manager.zk.ZNRecordSerializer;
-import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.IdealState.RebalanceMode;
 import org.apache.helix.model.StateModelDefinition;
 import org.apache.helix.tools.StateModelConfigGenerator;
@@ -10,7 +8,7 @@ import org.apache.helix.tools.StateModelConfigGenerator;
 public class CustomResourceManager {
 
   public static final String DEFAULT_STATE_MODEL = "OnlineOffline";
-  public static final String DEFAULT_RESOURCE_NAME = "topic";
+  public static final String DEFAULT_RESOURCE_NAME = "custom-resource";
   public static final int DEFAULT_PARTITION_NUMBER = 6;
   public static final int DEFAULT_REPLICA_NUMBER = 1;
 
@@ -24,23 +22,17 @@ public class CustomResourceManager {
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 
-    ZkClient zkclient = null;
-    try {
-      zkclient =
-          new ZkClient(zkAddr, ZkClient.DEFAULT_SESSION_TIMEOUT,
-              ZkClient.DEFAULT_CONNECTION_TIMEOUT, new ZNRecordSerializer());
-      ZKHelixAdmin admin = new ZKHelixAdmin(zkclient);
+    ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
 
+    clusterAdmin.runClusterOp(admin -> {
       addResource(admin, clusterName, DEFAULT_RESOURCE_NAME, DEFAULT_PARTITION_NUMBER);
 //      deleteResource(admin, clusterName, DEFAULT_RESOURCE_NAME);
+//      addResource(admin, clusterName, "mycustomresource", 3);
+//      deleteResource(admin, clusterName, "mycustomresource");
+      return null;
+    });
 
-      //      addResource(admin, clusterName, "mycustomresource", 3);
-      //deleteResource(admin, clusterName, "mycustomresource");
-    } finally {
-      if (zkclient != null) {
-        zkclient.close();
-      }
-    }
+
   }
 
   private static void addResource(ZKHelixAdmin admin, String clusterName, String resourceName, int partitions) {

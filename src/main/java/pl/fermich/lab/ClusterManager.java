@@ -10,8 +10,8 @@ public class ClusterManager {
 //      System.exit(1);
 //    }
 
+    //    final String zkAddr = args[0];
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-//    final String zkAddr = args[0];
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
 
     try {
@@ -29,7 +29,6 @@ public class ClusterManager {
 
       Thread.currentThread().join();
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }

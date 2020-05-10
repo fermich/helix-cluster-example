@@ -3,9 +3,6 @@ package pl.fermich.lab;
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
 import org.apache.helix.InstanceType;
-import org.apache.helix.manager.zk.ZKHelixAdmin;
-import org.apache.helix.manager.zk.ZNRecordSerializer;
-import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.task.*;
 import pl.fermich.lab.task.CustomTask;
@@ -16,71 +13,57 @@ import java.util.concurrent.TimeUnit;
 public class CustomTaskManager {
   private final String zkAddr;
   private final String clusterName;
-  private final String nodeId;
+  private final String taskId;
   private HelixManager manager = null;
 
-  public CustomTaskManager(String zkAddr, String clusterName, String nodeId) {
+  public CustomTaskManager(String zkAddr, String clusterName, String taskId) {
     this.zkAddr = zkAddr;
     this.clusterName = clusterName;
-    this.nodeId = nodeId;
+    this.taskId = taskId;
   }
 
-  public void connect() {
+  public void startWorkflow(String workflowName, String jobName) {
     try {
-      manager = HelixManagerFactory.getZKHelixManager(clusterName, nodeId, InstanceType.CONTROLLER, zkAddr);
+      manager = HelixManagerFactory.getZKHelixManager(clusterName, taskId, InstanceType.CONTROLLER, zkAddr);
       manager.connect();
 
       TaskDriver taskDriver = new TaskDriver(manager);
-      Workflow myWorkflow = configureWorkflow("Workflow3", "Job3");
+      Workflow workflow = configureWorkflow(workflowName, jobName, 2);
 
-      taskDriver.delete("Workflow3");
-      taskDriver.start(myWorkflow);
-
-     // taskDriver.stop("Workflow3");
-      //taskDriver.stop(myWorkflow);
-      //taskDriver.resume(myWorkflow);
-      //taskDriver.delete(myWorkflow);
+      taskDriver.delete(workflowName);
+      taskDriver.start(workflow);
+//      taskDriver.stop(workflowName);
+//      taskDriver.resume(workflowName);
 
       Thread.currentThread().join();
     } catch (InterruptedException e) {
-      System.err.println(" [-] " + nodeId + " is interrupted ...");
+      System.err.println("Task " + taskId + " is interrupted ...");
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } finally {
       disconnect();
     }
   }
 
-  private Workflow configureWorkflow(String workflowName, String jobName) {
+  private Workflow configureWorkflow(String workflowName, String jobName, int numberOfTasks) {
     Workflow.Builder myWorkflowBuilder = new Workflow.Builder(workflowName);
     myWorkflowBuilder.setExpiry(200000L)
             .setScheduleConfig(ScheduleConfig.recurringFromNow(TimeUnit.MINUTES, 2));
 
-    myWorkflowBuilder.addJob(jobName, configureJob());
-
+    myWorkflowBuilder.addJob(jobName, configureJob(numberOfTasks));
+    //TODO: consider parenting
     //myWorkflowBuilder.addParentChildDependency(ParentJobName, ChildJobName);
 
     Workflow myWorkflow = myWorkflowBuilder.build();
     return myWorkflow;
   }
 
-  private JobConfig.Builder configureJob() {
-    //TODO command
-//    TaskConfig taskCfg = new TaskConfig(null, null, null, null);
-//    List<TaskConfig> taskCfgs = new ArrayList<TaskConfig>();
-//    taskCfgs.add(taskCfg);
-
+  private JobConfig.Builder configureJob(int numberOfTasks) {
     JobConfig.Builder myJobCfgBuilder = new JobConfig.Builder();
-
-//    # Rather than defining individual tasks, start a task on each MASTER replica of MyDB partitions
-//      targetResource: MyDB
-//      targetPartitionStates: [MASTER]
-
-    //start a task on each MASTER replica of target resource partitions
-    myJobCfgBuilder.setCommand(CustomTask.COMMAND).setNumberOfTasks(2);
+    myJobCfgBuilder.setCommand(CustomTask.COMMAND).setNumberOfTasks(numberOfTasks);
     myJobCfgBuilder.setTargetResource(CustomResourceManager.DEFAULT_RESOURCE_NAME);
     //myJobCfgBuilder.setTargetPartitions()
+    //TODO: it is possible to start a task on each MASTER replica of the resource partitions:
     //myJobCfgBuilder.setTargetPartitionStates(Sets.newHashSet("MASTER"));
     //myJobCfgBuilder.addTaskConfigs(taskCfgs);
     return myJobCfgBuilder;
@@ -92,8 +75,21 @@ public class CustomTaskManager {
     }
   }
 
+  private void registerTaskInstance(ClusterAdmin clusterAdmin) {
+    clusterAdmin.runClusterOp(admin -> {
+      List<String> nodes = admin.getInstancesInCluster(clusterName);
+      if (!nodes.contains(taskId)) {
+        InstanceConfig config = new InstanceConfig(taskId);
+        config.setHostName("localhost");
+        config.setInstanceEnabled(true);
+        admin.addInstance(clusterName, config);
+      }
+      return null;
+    });
+  }
+
   public static void main(String[] args) throws Exception {
-    //    if (args.length < 3) {
+//    if (args.length < 3) {
 //      System.err
 //          .println("USAGE: java ConsumerNode zookeeperAddress (e.g. localhost:2181) consumerId (0-2)");
 //      System.exit(1);
@@ -101,54 +97,24 @@ public class CustomTaskManager {
 
 //    final String zkAddr = args[0];
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+
+    ClusterAdmin clusterAdmin = new ClusterAdmin(ClusterInit.DEFAULT_ZK_ADDRESS);
+
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-//    final String consumerId = args[1];
-    final String consumerId = "1";
+//    final String taskId = args[1];
+    final String taskId = "task_1";
 
-    ZkClient zkclient = null;
-    try {
-      // add node to cluster if not already added
-      zkclient =
-              new ZkClient(zkAddr, ZkClient.DEFAULT_SESSION_TIMEOUT,
-                      ZkClient.DEFAULT_CONNECTION_TIMEOUT, new ZNRecordSerializer());
-      ZKHelixAdmin admin = new ZKHelixAdmin(zkclient);
+    final CustomTaskManager taskManager = new CustomTaskManager(zkAddr, clusterName, taskId);
 
-      List<String> nodes = admin.getInstancesInCluster(clusterName);
-      if (!nodes.contains("task_" + consumerId)) {
-        InstanceConfig config = new InstanceConfig("task_" + consumerId);
-        config.setHostName("localhost");
-        config.setInstanceEnabled(true);
-        admin.addInstance(clusterName, config);
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        System.out.println("Shutting down: " + taskId);
+        taskManager.disconnect();
       }
+    });
 
-      final CustomTaskManager customTaskManager =
-              new CustomTaskManager(zkAddr, clusterName, "task_" + consumerId);
-
-      // start consumer
-//      final ConsumerNode consumerNode =
-//              new ConsumerNode(zkAddr, clusterName, "consumer_" + consumerId);
-
-      Runtime.getRuntime().addShutdownHook(new Thread() {
-        @Override
-        public void run() {
-          System.out.println("Shutting down task_" + consumerId);
-          customTaskManager.disconnect();
-        }
-      });
-
-      customTaskManager.connect();
-    } finally {
-      if (zkclient != null) {
-        zkclient.close();
-      }
-    }
-
-
-//    if (args.length < 3) {
-//      System.err
-//          .println("USAGE: java ConsumerNode zookeeperAddress (e.g. localhost:2181) taskId (0-2)");
-//      System.exit(1);
-//    }
-
+    taskManager.registerTaskInstance(clusterAdmin);
+    taskManager.startWorkflow("CustomWorkflow", "CustomJob");
   }
 }

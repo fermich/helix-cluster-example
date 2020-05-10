@@ -30,10 +30,10 @@ public class CustomResourceStateModel extends StateModel {
     LOG.debug(nodeId + " becomes ONLINE from OFFLINE for " + partition);
 
     if (maintainer == null) {
-      LOG.debug("Starting ConsumerThread for " + partition + "...");
+      LOG.debug("Starting resource maintainer thread for " + partition + "...");
       maintainer = new CustomResourceMaintainer(partition, nodeId);
       maintainer.start();
-      LOG.debug("Starting ConsumerThread for " + partition + " done");
+      LOG.debug("Starting resource maintainer thread for " + partition + " done");
 
     }
   }
@@ -75,7 +75,6 @@ public class CustomResourceStateModel extends StateModel {
       try {
         maintainer.join(2000);
       } catch (InterruptedException e) {
-        // TODO Auto-generated catch block
         e.printStackTrace();
       }
       maintainer = null;

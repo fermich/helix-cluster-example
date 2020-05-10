@@ -7,9 +7,6 @@ import java.util.Map;
 import org.apache.helix.HelixManager;
 import org.apache.helix.HelixManagerFactory;
 import org.apache.helix.InstanceType;
-import org.apache.helix.manager.zk.ZKHelixAdmin;
-import org.apache.helix.manager.zk.ZNRecordSerializer;
-import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.InstanceConfig;
 import org.apache.helix.participant.StateMachineEngine;
 import org.apache.helix.task.TaskConstants;
@@ -31,38 +28,54 @@ public class ClusterNode {
     this.nodeId = nodeId;
   }
 
-  public void connect() {
+  public void connectToCluster() {
     try {
       manager = HelixManagerFactory.getZKHelixManager(clusterName, nodeId, InstanceType.PARTICIPANT, zkAddr);
-
       StateMachineEngine stateMach = manager.getStateMachineEngine();
 
-      //register resource factory:
-      CustomResourceStateModelFactory modelFactory = new CustomResourceStateModelFactory(nodeId);
-      stateMach.registerStateModelFactory(CustomResourceManager.DEFAULT_STATE_MODEL, modelFactory);
-
-      //register task factory:
-      Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
-      taskFactoryReg.put(CustomTask.COMMAND, new CustomTaskFactory());
-      stateMach.registerStateModelFactory(TaskConstants.STATE_MODEL_NAME, new TaskStateModelFactory(manager, taskFactoryReg));
+      registerCustomResourceFactory(stateMach);
+      registerCustomTaskFactory(stateMach);
 
       manager.connect();
 
       Thread.currentThread().join();
     } catch (InterruptedException e) {
-      System.err.println(" [-] " + nodeId + " is interrupted ...");
+      System.err.println("Node " + nodeId + " is interrupted ...");
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     } finally {
       disconnect();
     }
   }
 
+  private void registerCustomResourceFactory(StateMachineEngine stateMach) {
+    CustomResourceStateModelFactory modelFactory = new CustomResourceStateModelFactory(nodeId);
+    stateMach.registerStateModelFactory(CustomResourceManager.DEFAULT_STATE_MODEL, modelFactory);
+  }
+
+  private void registerCustomTaskFactory(StateMachineEngine stateMach) {
+    Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
+    taskFactoryReg.put(CustomTask.COMMAND, new CustomTaskFactory());
+    stateMach.registerStateModelFactory(TaskConstants.STATE_MODEL_NAME, new TaskStateModelFactory(manager, taskFactoryReg));
+  }
+
   public void disconnect() {
     if (manager != null) {
       manager.disconnect();
     }
+  }
+
+  private void registerNodeInstance(ClusterAdmin clusterAdmin, String nodeId) {
+    clusterAdmin.runClusterOp(admin -> {
+      List<String> nodes = admin.getInstancesInCluster(clusterName);
+      if (!nodes.contains(nodeId)) {
+        InstanceConfig config = new InstanceConfig(nodeId);
+        config.setHostName("localhost");
+        config.setInstanceEnabled(true);
+        admin.addInstance(clusterName, config);
+      }
+      return null;
+    });
   }
 
   public static void main(String[] args) throws Exception {
@@ -75,42 +88,22 @@ public class ClusterNode {
 //    final String zkAddr = args[0];
     final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-//    final String consumerId = args[1];
-    final String consumerId = "0";
+//    final String nodeId = args[1];
+    final String nodeId = "node_0";
+    ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
 
-    ZkClient zkclient = null;
-    try {
-      // add node to cluster if not already added
-      zkclient =
-          new ZkClient(zkAddr, ZkClient.DEFAULT_SESSION_TIMEOUT,
-              ZkClient.DEFAULT_CONNECTION_TIMEOUT, new ZNRecordSerializer());
-      ZKHelixAdmin admin = new ZKHelixAdmin(zkclient);
+    final ClusterNode clusterNode =
+        new ClusterNode(zkAddr, clusterName, nodeId);
 
-      List<String> nodes = admin.getInstancesInCluster(clusterName);
-      if (!nodes.contains("consumer_" + consumerId)) {
-        InstanceConfig config = new InstanceConfig("consumer_" + consumerId);
-        config.setHostName("localhost");
-        config.setInstanceEnabled(true);
-        admin.addInstance(clusterName, config);
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        System.out.println("Shutting down: " + nodeId);
+        clusterNode.disconnect();
       }
+    });
 
-      // start consumer
-      final ClusterNode clusterNode =
-          new ClusterNode(zkAddr, clusterName, "consumer_" + consumerId);
-
-      Runtime.getRuntime().addShutdownHook(new Thread() {
-        @Override
-        public void run() {
-          System.out.println("Shutting down consumer_" + consumerId);
-          clusterNode.disconnect();
-        }
-      });
-
-      clusterNode.connect();
-    } finally {
-      if (zkclient != null) {
-        zkclient.close();
-      }
-    }
+    clusterNode.registerNodeInstance(clusterAdmin, nodeId);
+    clusterNode.connectToCluster();
   }
 }
