@@ -25,8 +25,8 @@ public class ClusterManager {
   }
 
   public static void main(String[] args) {
-    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+    String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+    String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
 
     ClusterManager clusterManager = new ClusterManager();
     clusterManager.startStandaloneController(zkAddr, clusterName);

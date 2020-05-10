@@ -5,8 +5,8 @@ public class ClusterInit {
   public static final String DEFAULT_CLUSTER_NAME = "helix-cluster-app";
 
   public static void main(String[] args) {
-    final String zkAddr = DEFAULT_ZK_ADDRESS;
-    final String clusterName = DEFAULT_CLUSTER_NAME;
+    String zkAddr = DEFAULT_ZK_ADDRESS;
+    String clusterName = DEFAULT_CLUSTER_NAME;
 
     ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
 

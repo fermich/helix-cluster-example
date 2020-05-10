@@ -40,7 +40,7 @@ public class ClusterNode {
       }
     });
 
-    registerNodeInstance(clusterAdmin, nodeId);
+    registerNodeInstance(clusterAdmin);
     connectToCluster();
   }
 
@@ -81,7 +81,7 @@ public class ClusterNode {
     }
   }
 
-  private void registerNodeInstance(ClusterAdmin clusterAdmin, String nodeId) {
+  private void registerNodeInstance(ClusterAdmin clusterAdmin) {
     clusterAdmin.runClusterOp(admin -> {
       List<String> nodes = admin.getInstancesInCluster(clusterName);
       if (!nodes.contains(nodeId)) {
@@ -94,13 +94,12 @@ public class ClusterNode {
     });
   }
 
-  public static void main(String[] args) throws Exception {
-    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
-    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+  public static void main(String[] args) {
+    String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+    String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+    String nodeId = UUID.randomUUID().toString();
 
-    final String nodeId = UUID.randomUUID().toString();
-    final ClusterNode clusterNode = new ClusterNode(zkAddr, clusterName, nodeId);
-
+    ClusterNode clusterNode = new ClusterNode(zkAddr, clusterName, nodeId);
     clusterNode.startNode();
   }
 }

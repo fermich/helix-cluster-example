@@ -23,6 +23,8 @@ public class CustomTaskManager {
   }
 
   public void startCustomWorkflow() {
+    ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
+
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
@@ -30,6 +32,8 @@ public class CustomTaskManager {
         disconnect();
       }
     });
+
+    registerTaskInstance(clusterAdmin);
     startWorkflow("CustomWorkflow", "CustomJob");
   }
 
@@ -100,13 +104,11 @@ public class CustomTaskManager {
   }
 
   public static void main(String[] args) {
-    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
-    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
-    final String taskId = "task_1";
-    CustomTaskManager taskManager = new CustomTaskManager(zkAddr, clusterName, taskId);
+    String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+    String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+    String taskId = "task_1";
 
-    ClusterAdmin clusterAdmin = new ClusterAdmin(ClusterInit.DEFAULT_ZK_ADDRESS);
-    taskManager.registerTaskInstance(clusterAdmin);
+    CustomTaskManager taskManager = new CustomTaskManager(zkAddr, clusterName, taskId);
     taskManager.startCustomWorkflow();
   }
 }

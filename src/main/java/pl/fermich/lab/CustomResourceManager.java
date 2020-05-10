@@ -13,8 +13,8 @@ public class CustomResourceManager {
   public static final int DEFAULT_REPLICA_NUMBER = 1;
 
   public static void main(String[] args) {
-    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
-    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
+    String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+    String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 
     ClusterAdmin clusterAdmin = new ClusterAdmin(zkAddr);
 
@@ -25,8 +25,6 @@ public class CustomResourceManager {
 //      deleteResource(admin, clusterName, "mycustomresource");
       return null;
     });
-
-
   }
 
   private static void addResource(ZKHelixAdmin admin, String clusterName, String resourceName, int partitions) {
