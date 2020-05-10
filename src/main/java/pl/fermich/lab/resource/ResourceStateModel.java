@@ -15,25 +15,25 @@ import org.apache.helix.participant.statemachine.Transition;
 public class ResourceStateModel extends StateModel {
   private static Logger LOG = LoggerFactory.getLogger(ResourceStateModel.class);
 
-  private final String _consumerId;
-  private final String _partition;
+  private final String nodeId;
+  private final String partition;
 
-  private ResourceMaintainer _thread = null;
+  private ResourceMaintainer maintainer = null;
 
-  public ResourceStateModel(String consumerId, String partition) {
-    _partition = partition;
-    _consumerId = consumerId;
+  public ResourceStateModel(String nodeId, String partition) {
+    this.nodeId = nodeId;
+    this.partition = partition;
   }
 
   @Transition(to = "ONLINE", from = "OFFLINE")
   public void onBecomeOnlineFromOffline(Message message, NotificationContext context) {
-    LOG.debug(_consumerId + " becomes ONLINE from OFFLINE for " + _partition);
+    LOG.debug(nodeId + " becomes ONLINE from OFFLINE for " + partition);
 
-    if (_thread == null) {
-      LOG.debug("Starting ConsumerThread for " + _partition + "...");
-      _thread = new ResourceMaintainer(_partition, _consumerId);
-      _thread.start();
-      LOG.debug("Starting ConsumerThread for " + _partition + " done");
+    if (maintainer == null) {
+      LOG.debug("Starting ConsumerThread for " + partition + "...");
+      maintainer = new ResourceMaintainer(partition, nodeId);
+      maintainer.start();
+      LOG.debug("Starting ConsumerThread for " + partition + " done");
 
     }
   }
@@ -41,45 +41,45 @@ public class ResourceStateModel extends StateModel {
   @Transition(to = "OFFLINE", from = "ONLINE")
   public void onBecomeOfflineFromOnline(Message message, NotificationContext context)
       throws InterruptedException {
-    LOG.debug(_consumerId + " becomes OFFLINE from ONLINE for " + _partition);
+    LOG.debug(nodeId + " becomes OFFLINE from ONLINE for " + partition);
 
-    if (_thread != null) {
-      LOG.debug("Stopping " + _consumerId + " for " + _partition + "...");
+    if (maintainer != null) {
+      LOG.debug("Stopping " + nodeId + " for " + partition + "...");
 
-      _thread.interrupt();
-      _thread.join(2000);
-      _thread = null;
-      LOG.debug("Stopping " + _consumerId + " for " + _partition + " done");
+      maintainer.interrupt();
+      maintainer.join(2000);
+      maintainer = null;
+      LOG.debug("Stopping " + nodeId + " for " + partition + " done");
 
     }
   }
 
   @Transition(to = "DROPPED", from = "OFFLINE")
   public void onBecomeDroppedFromOffline(Message message, NotificationContext context) {
-    LOG.debug(_consumerId + " becomes DROPPED from OFFLINE for " + _partition);
+    LOG.debug(nodeId + " becomes DROPPED from OFFLINE for " + partition);
   }
 
   @Transition(to = "OFFLINE", from = "ERROR")
   public void onBecomeOfflineFromError(Message message, NotificationContext context) {
-    LOG.debug(_consumerId + " becomes OFFLINE from ERROR for " + _partition);
+    LOG.debug(nodeId + " becomes OFFLINE from ERROR for " + partition);
   }
 
   @Override
   public void reset() {
     LOG.warn("Default reset() invoked");
 
-    if (_thread != null) {
-      LOG.debug("Stopping " + _consumerId + " for " + _partition + "...");
+    if (maintainer != null) {
+      LOG.debug("Stopping " + nodeId + " for " + partition + "...");
 
-      _thread.interrupt();
+      maintainer.interrupt();
       try {
-        _thread.join(2000);
+        maintainer.join(2000);
       } catch (InterruptedException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }
-      _thread = null;
-      LOG.debug("Stopping " + _consumerId + " for " + _partition + " done");
+      maintainer = null;
+      LOG.debug("Stopping " + nodeId + " for " + partition + " done");
 
     }
   }

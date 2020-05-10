@@ -1,12 +1,12 @@
 package pl.fermich.lab.resource;
 
 public class ResourceMaintainer extends Thread {
-  private final String _partition;
-  private final String _consumerId;
+  private final String partition;
+  private final String nodeId;
 
-  public ResourceMaintainer(String partition, String consumerId) {
-    _partition = partition;
-    _consumerId = consumerId;
+  public ResourceMaintainer(String partition, String nodeId) {
+    this.partition = partition;
+    this.nodeId = nodeId;
   }
 
   @Override
@@ -14,10 +14,10 @@ public class ResourceMaintainer extends Thread {
     try {
       while (true) {
         Thread.sleep(10000);
-        System.out.println(" work log from consumer: " + _consumerId + " doing job on: " + _partition);
+        System.out.println(" work log from consumer: " + nodeId + " doing job on: " + partition);
       }
     } catch (InterruptedException e) {
-      System.err.println(" [-] " + _consumerId + " on " + _partition + " is interrupted ...");
+      System.err.println(" [-] " + nodeId + " on " + partition + " is interrupted ...");
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -6,10 +6,9 @@ import org.apache.helix.manager.zk.ZkClient;
 import org.apache.helix.model.IdealState.RebalanceMode;
 
 public class ResourceManager {
-  public static final String DEFAULT_CLUSTER_NAME = "rabbitmq-consumer-cluster";
+
   public static final String DEFAULT_RESOURCE_NAME = "topic";
   public static final int DEFAULT_PARTITION_NUMBER = 6;
-  public static final String DEFAULT_STATE_MODEL = "OnlineOffline";
 
   public static void main(String[] args) {
 //    if (args.length < 1) {
@@ -18,8 +17,8 @@ public class ResourceManager {
 //    }
 
 //    final String zkAddr = args[0];
-    final String zkAddr = "localhost:2181";
-    final String clusterName = DEFAULT_CLUSTER_NAME;
+    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
+    final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 
     ZkClient zkclient = null;
     try {
@@ -40,7 +39,7 @@ public class ResourceManager {
   }
 
   private static void addResource(ZKHelixAdmin admin, String clusterName, String resourceName, int partitions) {
-    admin.addResource(clusterName, resourceName, partitions, DEFAULT_STATE_MODEL,
+    admin.addResource(clusterName, resourceName, partitions, ClusterInit.DEFAULT_STATE_MODEL,
             RebalanceMode.FULL_AUTO.toString());
     admin.rebalance(clusterName, resourceName, 1);
   }

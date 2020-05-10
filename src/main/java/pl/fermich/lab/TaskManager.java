@@ -14,23 +14,23 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class TaskManager {
-  private final String _zkAddr;
-  private final String _clusterName;
-  private final String _consumerId;
-  private HelixManager _manager = null;
+  private final String zkAddr;
+  private final String clusterName;
+  private final String nodeId;
+  private HelixManager manager = null;
 
-  public TaskManager(String zkAddr, String clusterName, String consumerId) {
-    _zkAddr = zkAddr;
-    _clusterName = clusterName;
-    _consumerId = consumerId;
+  public TaskManager(String zkAddr, String clusterName, String nodeId) {
+    this.zkAddr = zkAddr;
+    this.clusterName = clusterName;
+    this.nodeId = nodeId;
   }
 
   public void connect() {
     try {
-      _manager = HelixManagerFactory.getZKHelixManager(_clusterName, _consumerId, InstanceType.CONTROLLER, _zkAddr);
-      _manager.connect();
+      manager = HelixManagerFactory.getZKHelixManager(clusterName, nodeId, InstanceType.CONTROLLER, zkAddr);
+      manager.connect();
 
-      TaskDriver taskDriver = new TaskDriver(_manager);
+      TaskDriver taskDriver = new TaskDriver(manager);
       Workflow myWorkflow = configureWorkflow("Workflow3", "Job3");
 
       taskDriver.delete("Workflow3");
@@ -43,7 +43,7 @@ public class TaskManager {
 
       Thread.currentThread().join();
     } catch (InterruptedException e) {
-      System.err.println(" [-] " + _consumerId + " is interrupted ...");
+      System.err.println(" [-] " + nodeId + " is interrupted ...");
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -87,8 +87,8 @@ public class TaskManager {
   }
 
   public void disconnect() {
-    if (_manager != null) {
-      _manager.disconnect();
+    if (manager != null) {
+      manager.disconnect();
     }
   }
 
@@ -100,7 +100,7 @@ public class TaskManager {
 //    }
 
 //    final String zkAddr = args[0];
-    final String zkAddr = "localhost:2181";
+    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 //    final String consumerId = args[1];
     final String consumerId = "1";

@@ -12,7 +12,7 @@ public class ClusterManager {
 
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 //    final String zkAddr = args[0];
-    final String zkAddr = "localhost:2181";
+    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
 
     try {
       final HelixManager manager =

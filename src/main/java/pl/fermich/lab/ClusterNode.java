@@ -20,36 +20,36 @@ import pl.fermich.lab.task.ResourceTask;
 import pl.fermich.lab.task.ResourceTaskFactory;
 
 public class ClusterNode {
-  private final String _zkAddr;
-  private final String _clusterName;
-  private final String _consumerId;
-  private HelixManager _manager = null;
+  private final String zkAddr;
+  private final String clusterName;
+  private final String nodeId;
+  private HelixManager manager = null;
 
-  public ClusterNode(String zkAddr, String clusterName, String consumerId) {
-    _zkAddr = zkAddr;
-    _clusterName = clusterName;
-    _consumerId = consumerId;
+  public ClusterNode(String zkAddr, String clusterName, String nodeId) {
+    this.zkAddr = zkAddr;
+    this.clusterName = clusterName;
+    this.nodeId = nodeId;
   }
 
   public void connect() {
     try {
-      _manager = HelixManagerFactory.getZKHelixManager(_clusterName, _consumerId, InstanceType.PARTICIPANT, _zkAddr);
+      manager = HelixManagerFactory.getZKHelixManager(clusterName, nodeId, InstanceType.PARTICIPANT, zkAddr);
 
-      StateMachineEngine stateMach = _manager.getStateMachineEngine();
+      StateMachineEngine stateMach = manager.getStateMachineEngine();
 
-      ResourceStateModelFactory modelFactory = new ResourceStateModelFactory(_consumerId);
+      ResourceStateModelFactory modelFactory = new ResourceStateModelFactory(nodeId);
       stateMach.registerStateModelFactory(ClusterInit.DEFAULT_STATE_MODEL, modelFactory);
 
       //register task factory:
       Map<String, TaskFactory> taskFactoryReg = new HashMap<String, TaskFactory>();
       taskFactoryReg.put(ResourceTask.COMMAND, new ResourceTaskFactory());
-      stateMach.registerStateModelFactory(TaskConstants.STATE_MODEL_NAME, new TaskStateModelFactory(_manager, taskFactoryReg));
+      stateMach.registerStateModelFactory(TaskConstants.STATE_MODEL_NAME, new TaskStateModelFactory(manager, taskFactoryReg));
 
-      _manager.connect();
+      manager.connect();
 
       Thread.currentThread().join();
     } catch (InterruptedException e) {
-      System.err.println(" [-] " + _consumerId + " is interrupted ...");
+      System.err.println(" [-] " + nodeId + " is interrupted ...");
     } catch (Exception e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
@@ -59,8 +59,8 @@ public class ClusterNode {
   }
 
   public void disconnect() {
-    if (_manager != null) {
-      _manager.disconnect();
+    if (manager != null) {
+      manager.disconnect();
     }
   }
 
@@ -72,7 +72,7 @@ public class ClusterNode {
 //    }
 
 //    final String zkAddr = args[0];
-    final String zkAddr = "localhost:2181";
+    final String zkAddr = ClusterInit.DEFAULT_ZK_ADDRESS;
     final String clusterName = ClusterInit.DEFAULT_CLUSTER_NAME;
 //    final String consumerId = args[1];
     final String consumerId = "0";
