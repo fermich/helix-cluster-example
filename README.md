@@ -6,7 +6,7 @@ To run the cluster follow the steps below:
 1. Download and run Zookeeper
 2. Initialize the cluster running the **ClusterAdmin** class
 3. Start the Helix Controller using **ClusterManager** class
-4. Add nodes to the cluster running **ClusterNode** as many times as you want
+4. Add nodes to the cluster starting as many **ClusterNode**s as you want
 5. Distribute a resource between the nodes calling **CustomResourceManager**
 6. Run a workflow to process the resource using **CustomTaskManager**
 
