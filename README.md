@@ -1,14 +1,14 @@
 # Helix cluster app
 
-This is a sample cluster app distributing resources and workflow tasks using the Helix framework.  
+This is a sample cluster app which calls the Helix framework to help with distributing resources and workflow tasks.  
 
-To run the cluster follow the steps below:
+To run this sample cluster follow the steps below:
 1. Download and run Zookeeper
 2. Initialize the cluster running the **ClusterAdmin** class
-3. Start the Helix Controller using **ClusterManager** class
+3. Start Helix Controller using **ClusterManager** class
 4. Add nodes to the cluster starting as many **ClusterNode**s as you want
-5. Distribute a resource between the nodes calling **CustomResourceManager**
-6. Run a workflow to process the resource using **CustomTaskManager**
+5. Distribute a demo resource to the nodes by starting **CustomResourceManager**
+6. Run a workflow to process the demo resource via **CustomTaskManager**
 
 
 Useful links:
